@@ -61,6 +61,16 @@ type Book {
   genre: BookGenre
 }
 
+type Personne {
+  name: String
+  visite: [Personne] @relation(name: "visite", direction: "OUT")
+  blacklist: [Personne] @relation(name: "blacklist", direction: "OUT")
+  favorite: [Personne] @relation(name: "favorite", direction: "OUT")
+  visiteIn: [Personne] @relation(name: "visite", direction: "IN")
+  blacklistIn: [Personne] @relation(name: "blacklist", direction: "IN")
+  favoriteIn: [Personne] @relation(name: "favorite", direction: "IN")
+}
+
 type Query {
   Movie(id: ID, title: String, year: Int, plot: String, poster: String, imdbRating: Float, first: Int, offset: Int): [Movie]
   MoviesByYear(year: Int): [Movie]
@@ -68,6 +78,8 @@ type Query {
   MovieById(movieId: ID!): Movie
   GenresBySubstring(substring: String): [Genre] @cypher(statement: "MATCH (g:Genre) WHERE toLower(g.name) CONTAINS toLower($substring) RETURN g")
   Books: [Book]
+  Personne: [Personne]
+  Visite(name: String): [Personne]
 }`;
 
 const resolvers = {
@@ -91,6 +103,12 @@ const resolvers = {
     },
     Books(object, params, ctx, resolveInfo) {
       return neo4jgraphql(object, params, ctx, resolveInfo, true);
+    },
+    Personne(object, params, ctx, resolveInfo) {
+      return neo4jgraphql(object, params, ctx, resolveInfo, true);
+    },
+    Visite(object, params, ctx, resolveInfo) {
+      return neo4jgraphql(object, params, ctx, resolveInfo, false);
     }
   }
 };
@@ -126,7 +144,7 @@ function context(headers, secrets) {
       secrets.NEO4J_URI || 'bolt://localhost:7687',
       neo4j.auth.basic(
         secrets.NEO4J_USER || 'neo4j',
-        secrets.NEO4J_PASSWORD || 'letmein'
+        secrets.NEO4J_PASSWORD || 'lanjara0311'
       )
     );
   }
@@ -156,7 +174,7 @@ server.use(
   graphiqlExpress({
     endpointURL: '/graphql',
     query: `{
-  
+
 }`
   })
 );
